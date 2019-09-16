@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <link id="favicon" rel="icon" href="test.ico" type="image/x-icon">
+  </head>
+  <body style="color:white; background-color:orange" >
+    <a href="/auth/github" style="font-size: 30px; margin-left:750px"><t><t></t></t>Sign In with Github <br><br></a>
+  </body>
+  <script src="//cdn.rawgit.com/mrdoob/three.js/master/build/three.min.js"></script>
+  <script src="vendor/three.js/build/three-min.js"></script>
+  <script src="vendor/require.js/require.js"></script>
+  <script src="../threex.text.js"></script>
+  <script>
+  var camera, scene, renderer;
+   var geometry, material, mesh;
+
+init();
+animate();
+
+function init() {
+
+    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 10 );
+    camera.position.z = 1;
+
+    scene = new THREE.Scene();
+
+    geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+    material = new THREE.MeshNormalMaterial();
+  
+
+    mesh = new THREE.Mesh( geometry, material );
+    scene.add( mesh );
+   
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setSize( window.innerWidth/2, window.innerHeight/2 );
+  
+    var inner = document.body.appendChild( renderer.domElement );
+    inner.style.marginLeft = "425px";
+}
+
+function animate() {
+
+    requestAnimationFrame( animate );
+
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.02;
+
+    renderer.render( scene, camera );
+
+}
+    
+  </script>
+</html>

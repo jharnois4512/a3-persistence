@@ -1,76 +1,143 @@
 const http = require( 'http' ),
       fs   = require( 'fs' ),
-      // IMPORTANT: you must run `npm install` in the directory for this assignment
-      // to install the mime library used in the following line of code
       mime = require( 'mime' ),
       TAFFY = require('taffy'),
+      express = require('express'),
+      app = express(),
       dir  = 'public/',
+      passport = require('passport'),
+      low = require('lowdb'),
+      FileSync = require('lowdb/adapters/FileSync'),
+      adapter = new FileSync('public/resources/db.json'),
+       serveStatic = require('serve-static'),
+      cookieSession = require('cookie-session'),
+      path = require('path'),
+       morgan = require('morgan'),
+      cookieParser = require('cookie-parser'),
+      db = low(adapter),
+     /**/ session = require('express-session'),
+      timeout = require('connect-timeout'),
       port = 3000    
 
+var GitHubStrategy = require('passport-github2').Strategy;
 
-var classes = TAFFY([
-    { "Department" : "CS1101",
+db.defaults({"users":[]}, {"cookies" :[]},
+  {"classes": 
+    [{"Department" : "CS1101", 
       "Professor" : "bob",
-      "Name" : "programming design concepts"
-    },
+      "Room" : "AK116"
+     },
     { "Department" : "ME1800",
       "Professor" : "Jill",
-      "Name" : "prototyping"
+      "Room" : "SL115"
     },
     { "Department"  : "CS2303",
       "Professor" : "Andres",
-      "Name" : "systems"
+      "Room" : "OH107"
     },
     { "Department" : "PSY1401",
       "Professor" : "Brian",
-      "Name" : "cognitive psych"
+      "Room" : "SL315"
     },
     { "Department" : "RBE1001",
       "Professor" : "Megan",
-      "Name" : "intro to robotics"
+      "Room" : "Flupper"
     },
     { "Department" : "ECE2049",
       "Professor" : "Sam",
-      "Name" : "embedded design"
+      "Room" : "Flower"
     },
     { "Department" : "CS4801",
       "Professor" : "Emily",
-      "Name" : "crypto"
-    }
-]);
+      "Room" : "AK232"
+    }]
+  }).write()
 
 
-const server = http.createServer( function( request,response ) {
-  if( request.method === 'GET' ) {
-    handleGet( request, response )    
-  }else if( request.method === 'POST' ){
-    handlePost( request, response ) 
-  }
-})
+app.use(require('body-parser').urlencoded({ extended: true }));
+// app.use(bodyParser.json())
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(morgan('combined'));
+app.use(cookieParser())
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
+app.use(timeout(10000));
+app.use(haltOnTimedout);
 
-
-
-const handleGet = function( request, response ) {
-  const filename = dir + request.url.slice( 1 ) 
-
-  if( request.url === '/' ) {
-    sendFile( response, 'public/index.html' )
-  }
-  else if(request.url === '/scripts.js'){
-    sendFile(response, "public/js/scripts.js")
-  }
-  else if(request.url === '/style.css'){
-    sendFile(response, "public/css/style.css")
-  }
-  else if(request.url === '/ac8c900b-49be-4128-8edb-e64905679f74%2FWPI_logo.png?v=1567371575005'){
-    sendFile(response, "ac8c900b-49be-4128-8edb-e64905679f74%2FWPI_logo.png?v=1567371575005")
-  }
-  else{
-    sendFile( response, filename )
-  }
+function haltOnTimedout(req, res, next){
+  console.log("oh no! Timeout!")
+  if (!req.timedout) next();
 }
 
-const handlePost = function( request, response ) {
+var sendjson = {}
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
+});
+
+
+app.get('/', function(req, res) {
+    res.sendFile('public/views/login.html', {root : '.'})
+});
+app.get('/scripts.js', function(req, res) {
+    res.sendFile('public/js/scripts.js', {root : '.'})
+});
+app.get('/db.json', function(req, res) {
+    res.sendFile('public/resources/db.json', {root : '.'})
+});
+app.get('/style.css', function(req, res) {
+    res.sendFile('public/css/style.css', {root : '.'})
+});
+app.get('/pass.js', function(req, res) {
+    res.sendFile('public/js/pass.js', {root : '.'})
+});
+app.get('/logo.png', function(req, res) {
+    res.sendFile('public/resources/img/logo.png', {root : '.'})
+});
+app.get('/index', function(req, res) {
+    res.sendFile('public/views/index.html', {root : '.'})
+    req.session.views = (req.session.views || 0) + 1
+    console.log(req.session.views + ' views')
+    var storeJson = {}
+    storeJson["cookie"] = req.cookies;
+    storeJson["signed"] = req.signedCookies;
+    db.get("cookies").push(storeJson).write()
+});
+
+app.get('/auth/github', passport.authenticate('github', {scope:['user:email']}),
+  function(x,y){});
+
+app.get('/auth/github/callback', passport.authenticate('github', {failureRedirect: '/login' }),
+  function(req, res) {
+    res.redirect('/index');
+  });
+
+passport.use(new GitHubStrategy({
+    passReqToCallBack: true,
+    clientID: 'd601f4e4de6912a5c81c',
+    clientSecret: 'ac4b432f842da48758d09836ab55984d561f7b9a',
+    callbackURL: "https://jharnois4512-a3-persistence.glitch.me/auth/github/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+      var ent = {}
+      ent['name'] = profile.username;
+      sendjson["username"] = profile.username;
+      db.get('users').push(ent).write()
+      console.log(db.get('users').find(ent).value())
+      process.nextTick(function(){
+        return done(null, profile)
+      })
+  }));
+
+app.post('/submit', function(request, response) {
+  console.log(request.body, "here")
   let dataString = ''
   let flag = 0;
   request.on( 'data', function( data ) {
@@ -79,74 +146,51 @@ const handlePost = function( request, response ) {
   request.on( 'end', function() {
     let inputData = JSON.parse( dataString )
     let action = inputData.action
-    if(action.includes('a')){
-      let dept = inputData.dept
-      let prof = inputData.prof
-      let name = inputData.name
-      let myEnt = {}
-      myEnt["Department"] = dept;
-      myEnt["Professor"] = prof
-      myEnt["Name"] = name
-      console.log(myEnt)
-      classes.insert(myEnt);
-    }
-    else if(action.includes('m')){
-      let cat = inputData.category;
-      let catTwo = inputData.secCategory;
-      let inputVal = inputData.input;
-      let catObj = {};
-      let innerObj = {};
-      innerObj["like"] = catTwo
-      catObj[cat] = innerObj;
-      let updateObj = {}
-      updateObj[cat] = inputVal;
-      console.log(updateObj)
-      classes(catObj).update(updateObj);
-    }
-    else{
-      let cat = inputData.category;
-      let catTwo = inputData.secCategory;
-      let inputVal = inputData.input;
-      let catObj = {};
-      let innerObj = {}
-      innerObj["like"] = catTwo
-      catObj[cat] = innerObj;
-      let updateObj = {}
-      updateObj[cat] = null;
-      console.log(updateObj)
-      classes(catObj).remove();
-    }
-    if(!flag){
-      let json, finalJson = [];
-      let sendjson;
-      response.writeHead( 200, "OK", {'Content-Type': 'application/json', 'charset':'UTF-8'});
-      classes().each(function (r){json = {dept:r.Department ,prof:r.Professor ,name:r.Name}; finalJson.push(json);})
-      sendjson={objs:finalJson}
-      response.end(JSON.stringify(sendjson));
-    }
-  })
-}
-
-const sendFile = function( response, filename ) {
-   const type = mime.getType( filename ) 
-
-   fs.readFile( filename, function( err, content ) {
-
-     // if the error = null, then we've loaded the file successfully
-     if( err === null ) {
-
-       //status code: https://httpstatuses.com
-       response.writeHeader( 200, { 'Content-Type': type })
-       response.end( content )
-
-     }else{
-
-       // file not found, error code 404
-       response.writeHeader( 404 )
-       response.end( '404 Error: File Not Found' )
-
+    console.log(inputData)
+     if(action.includes('a')){
+       sendjson['action'] = "a"    
+       let dept = inputData.dept
+       let prof = inputData.prof
+       let room = inputData.room
+       let myEnt = {}
+       myEnt["Department"] = dept;
+       myEnt["Professor"] = prof
+       myEnt["Room"] = room
+       console.log(myEnt)
+       db.get('classes').push(myEnt).write()
      }
-   })
-}
+     else if(action.includes('m')){
+      sendjson['action'] = "m"
+      let cat = inputData.category;
+      let catTwo = inputData.secCategory;
+      let inputVal = inputData.input;
+      let catObj = {},
+          secObj = {};
+      catObj[cat] = catTwo;
+      secObj[cat] = inputVal;
+      console.log(db.get('classes').find(catObj).assign(secObj).value())
+     }
+     else{
+      sendjson['action'] = "d"    
+       let cat = inputData.category;
+       let catTwo = inputData.secCategory;
+       let catObj = {};
+       catObj[cat] = catTwo;
+       let updateObj = {}
+       updateObj[cat] = null;
+       console.log(catObj)
+       console.log(db.get('classes').find(catObj).value());
+       db.get('classes').remove(catObj).write()
+     }
+       response.writeHead( 200, "OK", {'Content-Type': 'application/json', 'charset':'UTF-8'});
+       sendjson["classes"] = db.get('classes').value()
+       response.end(JSON.stringify(sendjson));
+    })
+});
 
-server.listen( process.env.PORT || port )
+app.listen(port || 3000)
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login')
+}
