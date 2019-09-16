@@ -1,43 +1,43 @@
  var startingClass =[
     { "Department" : "CS1101",
       "Professor"  : "bob",
-      "Name" : "programming design concepts"
+      "Room" : "AK116"
     },
     { "Department"  : "ME1800",
       "Professor"  : "Jill",
-      "Name" : "prototyping"
+      "Room" : "SL115"
     },
     { "Department"  : "CS2303",
       "Professor"  : "Andres",
-      "Name" : "systems"
+      "Room" : "OH107"
     },
     { "Department"  : "PSY1401",
       "Professor"  : "Brian",
-      "Name" : "cognitive psych"
+      "Room" : "SL315"
     },
     { "Department"  : "RBE1001",
       "Professor"  : "Megan",
-      "Name" : "intro to robotics"
+      "Room" : "Flupper"
     },
     { "Department"  : "ECE2049",
       "Professor"  : "Sam",
-      "Name" : "embedded design"
+      "Room" : "Flower"
     },
     { "Department"  : "CS4801",
       "Professor"  : "Emily",
-      "Name" : "crypto"
+      "Room" : "AK232"
     }
   ]
-  var list = [".", "Dept code of Class", "Professor Teaching Class", "Name of Class"];
+  var list = [".", "Dept code of Class", "Professor Teaching Class", "Room of Class"];
   var bodyTag = document.getElementsByClassName("body");
   bodyTag.addEventListener("load", myFunction());
   var deptArr = ["Test"];
   var profArr = [];
-  var nameArr = [];
+  var roomArr = [];
   var classesByCat = {
     Add: deptArr,
     Modify: profArr,
-    Delete: nameArr
+    Delete: roomArr
   }
   var testing;
 
@@ -62,11 +62,8 @@
           cell.innerHTML = startingClass[i].Professor;
         }
         else{
-          cell.innerHTML = startingClass[i].Name;
+          cell.innerHTML = startingClass[i].Room;
         }
       }
     } 
   }
-    
-   
-

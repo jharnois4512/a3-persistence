@@ -1,17 +1,11 @@
 body{
-/*  background-image:url('ac8c900b-49be-4128-8edb-e64905679f74%2FWPI_logo.png?v=1567371575005'); */
-/*  background-repeat: no-repeat; */
  background-color: #ac2b37 !important; 
-cursor: vertical-text;
 }
 h1{
   text-align: center;  
   animation-duration: 1s;
   animation-name: slidein;
   animation: pulse 5s infinite;
-}
-select{
-/*   animation: pulse 1s infinite; */
 }
 .form-control{
   width : 100% !important;
@@ -103,7 +97,7 @@ p{
   width : 210px;
   visibility : hidden;
 }
-#addName{
+#addRoom{
   width : 210px;
   visibility : hidden;
 }
