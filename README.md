@@ -49,6 +49,7 @@ Tech Achievement 2: Used cookie-parser to log each cookie to keep track of the d
 Tech Achievement 3: Used Morgan middleware to keep track of the web browser.  I am big into cyber security and seeing what browsers that access my website are important to me.
 
 
+Tech Achievement 4: Changing background (login page) from the best building on campus to my fraternity.
 
   
 <h3>Design/Evaluation Achievements</h3>
@@ -57,10 +58,16 @@ Tech Achievement 3: Used Morgan middleware to keep track of the web browser.  I 
 Design Achievement 1: Logged the username whenever they modified, added, or deleted a class
   
   
-Design Achievement 2: Used 3js to render a 3d cube, rotated it on login screen, made a small window for it so it didn't have to take whole screen
+Design Achievement 2: Used 3js to render a 3d cube, made it follow the mouse around. Not too close because the background interfeared with clicking the sign-in
   
   
 Design Achievement 3: Log the number of views to my main site using the cookie sessions.  This represents allowing me to track the most commonly seen page if I had a larger website
 
 
-Design Achievement 3: Modified my files to make them more structured.  More like a real software engineering project with structed folders.
+Design Achievement 4: Modified my files to make them more structured.  More like a real software engineering project with structed folders.
+
+
+Design Achievement 5: Made my background transparent for the threejs object by added in "alpha:true"
+
+
+
