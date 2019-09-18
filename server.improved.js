@@ -101,6 +101,12 @@ app.get('/pass.js', function(req, res) {
 app.get('/logo.png', function(req, res) {
     res.sendFile('public/resources/img/logo.png', {root : '.'})
 });
+app.get('/kap', function(req, res) {
+    res.sendFile('public/resources/img/kap', {root : '.'})
+});
+app.get('/ak.jpg', function(req, res) {
+    res.sendFile('public/resources/img/ak.jpg', {root : '.'})
+});
 app.get('/index', function(req, res) {
     res.sendFile('public/views/index.html', {root : '.'})
     req.session.views = (req.session.views || 0) + 1
